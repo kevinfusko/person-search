@@ -5,64 +5,104 @@
 import { revalidatePath } from 'next/cache'
 import { User, userSchema } from './schemas'
 import { cache } from 'react'
-
-const users: User[] = [
-    { id: '1', name: 'John Doe', phoneNumber: '0412345678', email: 'john@example.com' },
-    { id: '2', name: 'Jane Smith', phoneNumber: '0423456789', email: 'jane@example.com' },
-    { id: '3', name: 'Alice Johnson', phoneNumber: '0434567890', email: 'alice@example.com' },
-    { id: '4', name: 'Bob Williams', phoneNumber: '0445678901', email: 'bob@example.com' },
-    { id: '5', name: 'Charlie Brown', phoneNumber: '0456789012', email: 'charlie@example.com' },
-    { id: '6', name: 'Emily Davis', phoneNumber: '0467890123', email: 'emily@example.com' },
-    { id: '7', name: 'Frank Miller', phoneNumber: '0478901234', email: 'frank@example.com' },
-    { id: '8', name: 'Grace Lee', phoneNumber: '0489012345', email: 'grace@example.com' },
-    { id: '9', name: 'Henry Moore', phoneNumber: '0490123456', email: 'henry@example.com' },
-    { id: '10', name: 'Isabella Young', phoneNumber: '0401234567', email: 'isabella@example.com' },
-]
+import { prisma } from '@/lib/prisma'
 
 export async function searchUsers(query: string): Promise<User[]> {
     console.log('Searching users with query:', query)
-    const results = users.filter(user => user.name.toLowerCase().startsWith(query.toLowerCase()))
-    console.log('Search results:', results)
-    return results
+    
+    const people = await prisma.person.findMany({
+        where: {
+            name: {
+                startsWith: query,
+                mode: 'insensitive',
+            },
+        },
+        orderBy: {
+            name: 'asc',
+        },
+    })
+
+    console.log('Search results:', people)
+    return people
 }
 
 export async function addUser(data: Omit<User, 'id'>): Promise<User> {
-    const newId = crypto.randomUUID();
-    const newUser = { ...data, id: newId }
-    const validatedUser = userSchema.parse(newUser)
-    users.push(validatedUser)
-    return validatedUser
+    try {
+        const newUser = await prisma.person.create({
+            data: {
+                name: data.name,
+                email: data.email,
+                phoneNumber: data.phoneNumber,
+            },
+        })
+        
+        const validatedUser = userSchema.parse(newUser)
+        revalidatePath('/')
+        return validatedUser
+    } catch (error) {
+        console.error('Error adding user:', error)
+        throw new Error(`Failed to add user: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    }
 }
 
 export async function deleteUser(id: string): Promise<void> {
-    const index = users.findIndex(user => user.id === id)
-    if (index === -1) {
+    try {
+        await prisma.person.delete({
+            where: { id },
+        })
+        console.log(`User with id ${id} has been deleted.`)
+        revalidatePath('/') // Revalidate the page or component path
+    } catch (error) {
+        console.error('Error deleting user:', error)
         throw new Error(`User with id ${id} not found`)
     }
-    users.splice(index, 1)
-    console.log(`User with id ${id} has been deleted.`)
-    revalidatePath('/') // Revalidate the page or component path
-
 }
 
 export async function updateUser(id: string, data: Partial<Omit<User, 'id'>>): Promise<User> {
-    const index = users.findIndex(user => user.id === id)
-    if (index === -1) {
+    try {
+        const updatedUser = await prisma.person.update({
+            where: { id },
+            data: {
+                name: data.name,
+                email: data.email,
+                phoneNumber: data.phoneNumber,
+            },
+        })
+
+        const validatedUser = userSchema.parse(updatedUser)
+        console.log(`User with id ${id} has been updated.`)
+        revalidatePath('/') // Revalidate the page or component path
+
+        return validatedUser
+    } catch (error) {
+        console.error('Error updating user:', error)
         throw new Error(`User with id ${id} not found`)
     }
-
-    const existingUser = users[index]
-    const updatedUser = { ...existingUser, ...data }
-    const validatedUser = userSchema.parse(updatedUser) // Ensure the updated data adheres to schema
-
-    users[index] = validatedUser
-    console.log(`User with id ${id} has been updated.`)
-    revalidatePath('/') // Revalidate the page or component path
-
-    return validatedUser
 }
 
 export const getUserById = cache(async (id: string) => {
-    const user = users.find(user => user.id === id)
-    return user || null
+    try {
+        const user = await prisma.person.findUnique({
+            where: { id },
+        })
+        return user || null
+    } catch (error) {
+        console.error('Error fetching user:', error)
+        return null
+    }
 })
+
+export async function getAllUsers(): Promise<User[]> {
+    try {
+        const people = await prisma.person.findMany({
+            orderBy: {
+                name: 'asc',
+            },
+        })
+        console.log(`Retrieved ${people.length} users from database`)
+        return people
+    } catch (error) {
+        console.error('Error fetching all users:', error)
+        return []
+    }
+}
