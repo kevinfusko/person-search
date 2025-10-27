@@ -1,4 +1,5 @@
-import { auth } from "@/auth"
+'use client'
+
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import {
@@ -11,10 +12,9 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { handleSignOut } from "@/app/actions/auth-actions"
 import Link from "next/link"
+import type { Session } from "next-auth"
 
-export async function UserButton() {
-  const session = await auth()
-  
+export function UserButton({ session }: { session: Session | null }) {
   if (!session?.user) {
     return (
       <Button asChild variant="default">
