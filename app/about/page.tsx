@@ -65,8 +65,8 @@ export default function AboutPage() {
               <div className="border-l-4 border-primary pl-4">
                 <h4 className="font-semibold mb-1">Google OAuth Provider</h4>
                 <p className="text-sm text-muted-foreground">
-                  Secure authentication using Google accounts. Users authenticate through Google's servers,
-                  eliminating password management concerns and leveraging Google's security infrastructure.
+                  Secure authentication using Google accounts. Users authenticate through Google&apos;s servers,
+                  eliminating password management concerns and leveraging Google&apos;s security infrastructure.
                 </p>
               </div>
 
@@ -90,8 +90,8 @@ export default function AboutPage() {
             <div className="bg-muted p-4 rounded-lg">
               <h4 className="font-semibold mb-2">Authentication Flow</h4>
               <ol className="list-decimal list-inside space-y-1 text-sm text-muted-foreground">
-                <li>User clicks "Sign in with Google"</li>
-                <li>Redirect to Google's OAuth consent page</li>
+                <li>User clicks &quot;Sign in with Google&quot;</li>
+                <li>Redirect to Google&apos;s OAuth consent page</li>
                 <li>User authenticates and grants permissions</li>
                 <li>OAuth callback creates/updates user in database</li>
                 <li>Session stored in database with secure token</li>

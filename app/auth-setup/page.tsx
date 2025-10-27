@@ -149,7 +149,7 @@ export default function AuthSetupPage() {
                 <div>
                   <h4 className="font-semibold">User Initiates Sign-In</h4>
                   <p className="text-sm text-muted-foreground">
-                    User clicks "Sign in with Google" button
+                    User clicks &quot;Sign in with Google&quot; button
                   </p>
                 </div>
               </div>
@@ -161,7 +161,7 @@ export default function AuthSetupPage() {
                 <div>
                   <h4 className="font-semibold">OAuth Redirect</h4>
                   <p className="text-sm text-muted-foreground">
-                    User is redirected to Google's authentication page
+                    User is redirected to Google&apos;s authentication page
                   </p>
                 </div>
               </div>
